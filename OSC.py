@@ -262,7 +262,7 @@ class OSCMessage(object):
 		"""Clear any arguments appended so far
 		"""
 		self.typetags = ","
-		self.message  = ""
+		self.message  = b""
 
 	def append(self, argument, typehint=None):
 		"""Appends data to the message, updating the typetags based on
@@ -276,7 +276,7 @@ class OSCMessage(object):
 		elif isinstance(argument, OSCMessage):
 			raise TypeError("Can only append 'OSCMessage' to 'OSCBundle'")
 		
-		if hasattr(argument, '__iter__'):
+		if hasattr(argument, '__iter__') and not type(argument) in (str,bytes):
 			for arg in argument:
 				self.append(arg, typehint)
 			
@@ -705,7 +705,7 @@ def OSCString(next):
 	"""
 	
 	OSCstringLength = math.ceil((len(next)+1) / 4.0) * 4
-	return struct.pack(">%ds" % (OSCstringLength), str(next))
+	return struct.pack(">%ds" % (OSCstringLength), str(next).encode('latin1'))
 
 def OSCBlob(next):
 	"""Convert a string into an OSC Blob.
@@ -715,10 +715,12 @@ def OSCBlob(next):
 	"""
 
 	if isinstance(next,str):
+		next = next.encode('latin1')
+	if isinstance(next,bytes):
 		OSCblobLength = math.ceil((len(next)) / 4.0) * 4
 		binary = struct.pack(">i%ds" % (OSCblobLength), OSCblobLength, next)
 	else:
-		binary = ""
+		binary = b''
 
 	return binary
 
@@ -788,9 +790,9 @@ def OSCTimeTag(time):
 def _readString(data):
 	"""Reads the next (null-terminated) block of data
 	"""
-	length   = string.find(data,"\0")
+	length   = data.find(b'\0')
 	nextData = int(math.ceil((length+1) / 4.0) * 4)
-	return (data[0:length], data[nextData:])
+	return (data[0:length].decode('latin1'), data[nextData:])
 
 def _readBlob(data):
 	"""Reads the next (numbered) block of data
@@ -912,11 +914,13 @@ def hexDump(bytes):
 	"""
 	print("byte   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F")
 
+	if isinstance(bytes,str):
+		bytes = bytes.encode('latin1')
 	num = len(bytes)
 	for i in range(num):
 		if (i) % 16 == 0:
 			line = "%02X0 : " % (i/16)
-		line += "%02X " % ord(bytes[i])
+		line += "%02X " % bytes[i]
 		if (i+1) % 16 == 0:
 			print("%s: %s" % (line, repr(bytes[i-15:i+1])))
 			line = ""
