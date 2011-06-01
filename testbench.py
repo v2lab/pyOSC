@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import optparse
 from OSC import *
@@ -34,13 +34,13 @@ def testStreamingServerAndClient(listen_address):
 	bundle.setAddress("/*print")
 	bundle.append(("no,", 3, "actually."))
 
-	print "\nInstantiating OSCStreamingServer:"
+	print("\nInstantiating OSCStreamingServer:")
 	
 	# define a message-handler function for the server to call.
 	def printing_handler(addr, tags, stuff, source):
 		msg_string = "%s [%s] %s" % (addr, tags, str(stuff))
 		msg_string = "SERVER: Got '%s' from %s" % (msg_string, getUrlStr(source))
-		print msg_string
+		print(msg_string)
 		
 		# send a reply to the client.
 		msg = OSCMessage("/printed")
@@ -49,10 +49,10 @@ def testStreamingServerAndClient(listen_address):
 
 	# define a message-handler function for the server to call.
 	def info_handler(addr, tags, stuff, source):
-		print "SERVER: Info ", addr
+		print("SERVER: Info ", addr)
 		
 	def default_handler(addr, tags, stuff, source):
-		print "SERVER: No handler registered for ", addr
+		print("SERVER: No handler registered for ", addr)
 		return None
 
 	class DemoOSCStreamRequestHandler(OSCStreamRequestHandler):
@@ -67,12 +67,12 @@ def testStreamingServerAndClient(listen_address):
 			self.addMsgHandler("/print", printing_handler)
 			self.addMsgHandler("/info", info_handler)
 			self.addMsgHandler("default", default_handler)
-			print "SERVER: Address space:"
+			print("SERVER: Address space:")
 			for addr in self.getOSCAddressSpace():
-				print addr
+				print(addr)
 			
 		def exit_handler(self, addr, tags, stuff, source):
-			print "SERVER: EXIT ", addr
+			print("SERVER: EXIT ", addr)
 			self.server.run = False
 			return None
 
@@ -83,48 +83,48 @@ def testStreamingServerAndClient(listen_address):
 			self.run = True
 			
 	s = DemoServer(listen_address)
-	print s
+	print(s)
 
-	print "Starting ", s
+	print("Starting ", s)
 	s.start()
 	
 	# Instantiate OSCClient
-	print "Instantiating OSCStreamingClient:"
+	print("Instantiating OSCStreamingClient:")
 	def printed_handler(addr, tags, stuff, source):
-		print "CLIENT: Printed Handler: ", addr
+		print("CLIENT: Printed Handler: ", addr)
 	def broadcast_handler(addr, tags, stuff, source):
-		print "CLIENT: Broadcast Handler: ", addr
+		print("CLIENT: Broadcast Handler: ", addr)
 		
 	c = OSCStreamingClient()
 	c.connect(listen_address)
 	c.addMsgHandler("/printed", printed_handler)
 	c.addMsgHandler("/broadcast", broadcast_handler)
 	
-	print "\nSending Messages"
+	print("\nSending Messages")
 	print2 = print1.copy()
 	print2.setAddress('/noprint')
 	for m in (message, print1, print2, strings, bundle):
-		print "sending: ", m
+		print("sending: ", m)
 		c.sendOSC(m)
 		time.sleep(0.1)
 		
-	print "\nThe next message's address will match both the '/print' and '/printed' handlers..."
-	print "sending: ", blob
+	print("\nThe next message's address will match both the '/print' and '/printed' handlers...")
+	print("sending: ", blob)
 	c.sendOSC(blob)
 	time.sleep(0.1)
 
-	print "\nBundles can be given a timestamp.\nThe receiving server should 'hold' the bundle until its time has come"
+	print("\nBundles can be given a timestamp.\nThe receiving server should 'hold' the bundle until its time has come")
 	
 	waitbundle = OSCBundle("/print")
 	waitbundle.setTimeTag(time.time() + 5)
 	waitbundle.append("Note how the (single-thread) server blocks while holding this bundle")
 	
-	print "Set timetag 5 s into the future"
-	print "sending: ", waitbundle
+	print("Set timetag 5 s into the future")
+	print("sending: ", waitbundle)
 	c.sendOSC(waitbundle)
 	time.sleep(0.1)
 
-	print "Recursing bundles, with timetags set to 10 s [25 s, 20 s, 10 s]"
+	print("Recursing bundles, with timetags set to 10 s [25 s, 20 s, 10 s]")
 	bb = OSCBundle("/print")
 	bb.setTimeTag(time.time() + 1)
 	
@@ -143,7 +143,7 @@ def testStreamingServerAndClient(listen_address):
 	b.append("held for 4 sec")
 	bb.append(b)
 	
-	print "sending: ", bb
+	print("sending: ", bb)
 	c.sendOSC(bb)
 	time.sleep(0.1)
 	
@@ -167,18 +167,18 @@ def testStreamingServerAndClient(listen_address):
 				c.sendOSC(msg)
 			
 	except KeyboardInterrupt:
-		print "Interrupted."
+		print("Interrupted.")
 			
-	print "Closing client"
+	print("Closing client")
 	c.close()
 	
-	print "Closing server"
+	print("Closing server")
 	# make sure server receiving thread is scheduled before we close the server
 	# so that it can recognize, that the client disconnected itself 
 	time.sleep(1)
 	s.stop()
 	
-	print "Done. Arrivederci!"
+	print("Done. Arrivederci!")
 	sys.exit()
 			
 
@@ -245,9 +245,9 @@ if __name__ == "__main__":
 		sys.exit(0)
 	
 	welcome = "Welcome to the OSC testing program."
-	print welcome
+	print(welcome)
 	hexDump(welcome)
-	print
+	print()
 	message = OSCMessage()
 	message.setAddress("/print")
 	message.append(44)
@@ -255,10 +255,10 @@ if __name__ == "__main__":
 	message.append(4.5)
 	message.append("the white cliffs of dover")
 	
-	print message
+	print(message)
 	hexDump(message.getBinary())
 
-	print "\nMaking and unmaking a message.."
+	print("\nMaking and unmaking a message..")
 
 	strings = OSCMessage("/prin{ce,t}")
 	strings.append("Mary had a little lamb")
@@ -271,27 +271,27 @@ if __name__ == "__main__":
 
 	raw  = strings.getBinary()
 
-	print strings
+	print(strings)
 	hexDump(raw)
 
-	print "Retrieving arguments..."
+	print("Retrieving arguments...")
 	data = raw
 	for i in range(6):
 		text, data = _readString(data)
-		print text
+		print(text)
 
 	number, data = _readFloat(data)
-	print number
+	print(number)
 
 	number, data = _readFloat(data)
-	print number
+	print(number)
 
 	number, data = _readInt(data)
-	print number
+	print(number)
 
-	print decodeOSC(raw)
+	print(decodeOSC(raw))
 
-	print "\nTesting Blob types."
+	print("\nTesting Blob types.")
 
 	blob = OSCMessage("/pri*")
 	blob.append("","b")
@@ -302,7 +302,7 @@ if __name__ == "__main__":
 	blob.append("blobs","b")
 	blob.append(42)
 
-	print blob
+	print(blob)
 	hexDump(blob.getBinary())
 
 	print1 = OSCMessage()
@@ -311,7 +311,7 @@ if __name__ == "__main__":
 	print1.append(42)
 	print1.append(3.1415926)
 
-	print "\nTesting OSCBundle"
+	print("\nTesting OSCBundle")
 
 	bundle = OSCBundle()
 	bundle.append(print1)
@@ -319,11 +319,11 @@ if __name__ == "__main__":
 	bundle.setAddress("/*print")
 	bundle.append(("no,", 3, "actually."))
 
-	print bundle
+	print(bundle)
 	hexDump(bundle.getBinary())
 	
 	# Instantiate OSCClient
-	print "\nInstantiating OSCClient:"
+	print("\nInstantiating OSCClient:")
 	if len(targets):
 		c = OSCMultiClient()
 		c.updateOSCTargets(targets)
@@ -331,18 +331,18 @@ if __name__ == "__main__":
 		c = OSCClient()
 		c.connect(listen_address)	# connect back to our OSCServer
 	
-	print c
+	print(c)
 	if hasattr(c, 'getOSCTargetStrings'):
-		print "Sending to:"
+		print("Sending to:")
 		for (trg, filterstrings) in c.getOSCTargetStrings():
 			out = trg
 			for fs in filterstrings:
 				out += " %s" % fs
 				
-			print out
+			print(out)
 
 	# Now an OSCServer...
-	print "\nInstantiating OSCServer:"
+	print("\nInstantiating OSCServer:")
 	
 	# define a message-handler function for the server to call.
 	def printing_handler(addr, tags, stuff, source):
@@ -361,7 +361,7 @@ if __name__ == "__main__":
 	else:
 		s = OSCServer(listen_address, c, return_port=listen_address[1])
 	
-	print s
+	print(s)
 	
 	# Set Server to return errors as OSCMessages to "/error"
 	s.setSrvErrorPrefix("/error")
@@ -379,34 +379,34 @@ if __name__ == "__main__":
 	s.addMsgHandler("/printed", s.msgPrinter_handler)
 	s.addMsgHandler("/serverinfo", s.msgPrinter_handler)
 	
-	print "Registered Callback-functions:"
+	print("Registered Callback-functions:")
 	for addr in s.getOSCAddressSpace():
-		print addr
+		print(addr)
 		
-	print "\nStarting OSCServer. Use ctrl-C to quit."
+	print("\nStarting OSCServer. Use ctrl-C to quit.")
 	st = threading.Thread(target=s.serve_forever)
 	st.start()
 	
-	if hasattr(c, 'targets') and listen_address not in c.targets.keys():
-		print "\nSubscribing local Server to local Client"
+	if hasattr(c, 'targets') and listen_address not in list(c.targets.keys()):
+		print("\nSubscribing local Server to local Client")
 		c2 = OSCClient()
 		c2.connect(listen_address)
 		subreq = OSCMessage("/subscribe")
 		subreq.append(listen_address)
 
-		print "sending: ", subreq
+		print("sending: ", subreq)
 		c2.send(subreq)
 		c2.close()
 
 		time.sleep(0.1)
 	
-	print "\nRequesting OSC-address-space and subscribed clients from OSCServer"
+	print("\nRequesting OSC-address-space and subscribed clients from OSCServer")
 	inforeq = OSCMessage("/info")
 	for cmd in ("info", "list", "clients"):
 		inforeq.clearData()
 		inforeq.append(cmd)
 	
-		print "sending: ", inforeq
+		print("sending: ", inforeq)
 		c.send(inforeq)
 		
 		time.sleep(0.1)
@@ -414,21 +414,21 @@ if __name__ == "__main__":
 	print2 = print1.copy()
 	print2.setAddress('/noprint')
 	
-	print "\nSending Messages"
+	print("\nSending Messages")
 	
 	for m in (message, print1, print2, strings, bundle):
-		print "sending: ", m
+		print("sending: ", m)
 		c.send(m)
 
 		time.sleep(0.1)
 		
-	print "\nThe next message's address will match both the '/print' and '/printed' handlers..."
-	print "sending: ", blob
+	print("\nThe next message's address will match both the '/print' and '/printed' handlers...")
+	print("sending: ", blob)
 	c.send(blob)
 	
 	time.sleep(0.1)
 
-	print "\nBundles can be given a timestamp.\nThe receiving server should 'hold' the bundle until its time has come"
+	print("\nBundles can be given a timestamp.\nThe receiving server should 'hold' the bundle until its time has come")
 	
 	waitbundle = OSCBundle("/print")
 	waitbundle.setTimeTag(time.time() + 5)
@@ -437,13 +437,13 @@ if __name__ == "__main__":
 	else:
 		waitbundle.append("Note how the %s does not block while holding this bundle" % s.__class__.__name__)
 	
-	print "Set timetag 5 s into the future"
-	print "sending: ", waitbundle
+	print("Set timetag 5 s into the future")
+	print("sending: ", waitbundle)
 	c.send(waitbundle)
 	
 	time.sleep(0.1)
 
-	print "Recursing bundles, with timetags set to 10 s [25 s, 20 s, 10 s]"
+	print("Recursing bundles, with timetags set to 10 s [25 s, 20 s, 10 s]")
 	bb = OSCBundle("/print")
 	bb.setTimeTag(time.time() + 10)
 	
@@ -468,27 +468,27 @@ if __name__ == "__main__":
 		bb.append("Note how the %s handles the sub-bundles in the order dictated by their timestamps" % s.__class__.__name__)
 		bb.append("Each bundle's contents, however, are processed in random order (dictated by the kernel's threading)")
 	
-	print "sending: ", bb
+	print("sending: ", bb)
 	c.send(bb)
 	
 	time.sleep(0.1)
 
-	print "\nMessages sent!"
+	print("\nMessages sent!")
 	
-	print "\nWaiting for OSCServer. Use ctrl-C to quit.\n"
+	print("\nWaiting for OSCServer. Use ctrl-C to quit.\n")
 	
 	try:
 		while True:
 			time.sleep(30)
 	
 	except KeyboardInterrupt:
-		print "\nClosing OSCServer."
+		print("\nClosing OSCServer.")
 		s.close()
-		print "Waiting for Server-thread to finish"
+		print("Waiting for Server-thread to finish")
 		st.join()
-		print "Closing OSCClient"
+		print("Closing OSCClient")
 		c.close()
-		print "Done"
+		print("Done")
 		
 	sys.exit(0)
 
